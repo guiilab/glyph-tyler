@@ -1,0 +1,10 @@
+public/**/*.*
+.idea
+.DS_Store
+node_modules
+functions/node_modules
+npm-debug.log
+jobs
+
+!/public/index.html
+!/public/404.html
