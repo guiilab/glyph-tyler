@@ -12,6 +12,9 @@ var source = require('vinyl-source-stream')
 gulp.task('browserify', function() {
   browserify(['react/main.js', './utils.js', './redux/index.js'])
     .transform(babelify, {presets: ["es2015", "react"]})
+    .transform(require('browserify-css'), {
+      poll : true
+    })
     .bundle()
     .pipe(source('main.js'))
     .pipe(gulp.dest('public/js/'))
@@ -27,7 +30,12 @@ gulp.task('stylus', function() {
     .pipe(gulp.dest('public/css/'))
 })
 
-gulp.task('default', ['browserify', 'stylus'])
+gulp.task('antd-css', function() {
+  gulp.src('./node_modules/antd/dist/antd.css')
+    .pipe(gulp.dest('public/css/'))
+})
+
+gulp.task('default', ['browserify', 'stylus', 'antd-css'])
 
 gulp.task('watch', function() {
   livereload.listen(12564)
