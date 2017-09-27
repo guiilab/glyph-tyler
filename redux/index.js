@@ -2,11 +2,11 @@ import * as R from 'redux'
 import thunkMiddleware from 'redux-thunk'
 import { createLogger } from 'redux-logger'
 import { rootReducer } from './reducers'
-
+import * as actions from './actions'
 import { batchedSubscribe } from 'redux-batched-subscribe'
 import { unstable_batchedUpdates } from 'react-dom'
 
-var _ = require('lodash')
+import * as _ from 'lodash'
 
 var loggerMiddleware = createLogger()
 
@@ -27,6 +27,5 @@ export function configureStore(initialState, routerMiddleware) {
   )
 }
 
-export var defaultState = {
-
-}
+export * from './reducers'
+export * from './actions'

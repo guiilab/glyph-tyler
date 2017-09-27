@@ -5,6 +5,7 @@ node_modules
 functions/node_modules
 npm-debug.log
 jobs
+data/
 
 !/public/index.html
 !/public/404.html

@@ -1,17 +1,27 @@
 import * as A from 'antd'
 import React from 'react'
 import ReactDOM from 'react-dom'
+import * as RR from 'react-redux'
+import * as Redux from '../../redux'
 import { Flex, Box } from 'reflexbox'
+import data from '../../data/wuzzit_sample_data/visLevel1_0.json'
 
 let mapStateToProps = (state) => {
-  return _.assign({})
+  return { store: state }
 }
 
 let mapDispatchToProps = (dispatch) => {
   return { dispatch }
 }
 
-export class App extends React.Component {
+class AppRaw extends React.Component {
+  componentDidMount() {
+    this.props.dispatch({
+      type: Redux.LOAD_DATA_SET,
+      data: data
+    })
+  }
+
   render() {
     return (
       <A.Layout>
@@ -82,3 +92,5 @@ export class App extends React.Component {
     )
   }
 }
+
+export var App = RR.connect(mapStateToProps, mapDispatchToProps)(AppRaw)
