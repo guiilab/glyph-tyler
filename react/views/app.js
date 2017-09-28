@@ -5,6 +5,9 @@ import * as RR from 'react-redux'
 import * as Redux from '../../redux'
 import { Flex, Box } from 'reflexbox'
 import data from '../../data/wuzzit_sample_data/visLevel1_0.json'
+import * as _ from 'lodash'
+import { StatesVis } from './'
+import {ReactHeight} from 'react-height'
 
 let mapStateToProps = (state) => {
   return { store: state }
@@ -23,6 +26,8 @@ class AppRaw extends React.Component {
   }
 
   render() {
+    var store = this.props.store
+
     return (
       <A.Layout>
         <A.Layout.Header>header</A.Layout.Header>
@@ -80,12 +85,17 @@ class AppRaw extends React.Component {
             </A.Collapse>
           </A.Layout.Sider>
           <A.Layout.Content>
-            <A.Card style={{ height: '45vh' }}>
-              States visualization view
-            </A.Card>
-            <A.Card style={{ height: '45vh' }}>
-              Trajectories clusters view
-            </A.Card>
+            <ReactHeight onHeightReady={(h) => this.props.dispatch({
+              type: Redux.UPDATE_APP_KEY,
+              data: { key: 'visHeight', value: h }
+            })}>
+              <div style={{ height: '45vh', width:'100%' }}>
+                {(!_.isEmpty(store.view.dataset) && store.app.visHeight) ? <StatesVis /> : null}
+              </div>
+              <A.Card style={{ height: '45vh', width:'100%' }}>
+                Trajectories clusters view
+              </A.Card>
+            </ReactHeight>
           </A.Layout.Content>
         </A.Layout>
       </A.Layout>

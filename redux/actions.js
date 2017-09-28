@@ -1,1 +1,2 @@
 export var LOAD_DATA_SET = 'LOAD_DATA_SET'
+export var UPDATE_APP_KEY = 'UPDATE_APP_KEY'

@@ -5,7 +5,9 @@ var ReduxResponsive = require('redux-responsive')
 var RRR = require('react-router-redux')
 
 export var defaultState = {
-  app: {},
+  app: {
+    visHeight: null
+  },
 
   view: {
     dataset: { } // name, data
@@ -14,8 +16,13 @@ export var defaultState = {
   index: {}
 }
 
-function app() {
-  return {}
+function app(state, action) {
+  switch (action.type) {
+    case A.UPDATE_APP_KEY:
+      return _.assign({}, _.set({}, action.data.key, action.data.value))
+    default:
+      return state || defaultState.app
+  }
 }
 
 function view(state, action) {
