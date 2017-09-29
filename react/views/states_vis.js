@@ -76,6 +76,7 @@ class StatesVisRaw extends React.Component {
     link
       .attr('stroke-width', '1px')
       .attr('stroke', 'black')
+      .attr('opacity', 0.1)
 
 
     var point = g.selectAll('.d3-point')
@@ -96,7 +97,7 @@ class StatesVisRaw extends React.Component {
           })[d.state_type] || 'black'
         })
 
-    var x = (x) => x < 4*margin ? 4*margin : Math.min(width - 4*margin, x)
+    var x = (x) => x < margin ? margin : Math.min(width - 4*margin, x)
     var y = (y) => y < margin ? margin : Math.min(height - margin, y)
 
     var simulation = d3.forceSimulation(nodes)
@@ -110,9 +111,14 @@ class StatesVisRaw extends React.Component {
                 .each((d) => {
                     if (d.state_type === 'start') {
                       d.fx = margin
-                      d.fy = margin
+                      d.fy = (height - margin) / 2
                     } else {
-                      d.x = x(d.x)
+                      if (d.state_type === 'end') {
+                        d.fx = width - margin
+                      } else {
+                        d.x = x(d.x)
+                      }
+
                       d.y = y(d.y)
                     }
                   })
