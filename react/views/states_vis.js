@@ -74,7 +74,7 @@ class StatesVisRaw extends React.Component {
         .classed('d3-link', true)
 
     link
-      .attr('stroke-width', '1px')
+      .attr('stroke-width', l => Math.sqrt(l.weight))
       .attr('stroke', 'black')
       .attr('opacity', 0.1)
 
@@ -88,7 +88,8 @@ class StatesVisRaw extends React.Component {
     point
         // .attr('cx', (d) => scales.x(d.distance_start) )
         // .attr('cy', (d) => scales.y(parseInt(d.id)) )
-        .attr('r', (d) => scales.z(d.user_ids.length) )
+        .attr('r', (d) => Math.sqrt(d.visits))
+        .attr('opacity', 0.25)
         .attr('fill', (d) => {
           return ({
             start: 'red',
