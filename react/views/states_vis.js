@@ -169,6 +169,51 @@ class StatesVisRaw extends React.Component {
         d.fy = d3.event.y
       })
     )
+
+    point
+      .on('mouseover', (node) => { this._onNodesSelection([node], true) })
+      .on('mouseout', (node) => { this._onNodesSelection([node], false) })
+      .on('click', (node) => { this._onNodesSelection([node], true, true) })
+      .on('dblclick', (node) => { this._onNodesSelection([node], false, true) })
+
+    this.point = point
+    this.link = link
+  }
+
+  _onNodesSelection(nodes, isOn, isClicked) {
+    this.props.dispatch({
+      type: Redux.SELECT_NODES,
+      data: { nodes, isOn, isClicked }
+    })
+
+    setTimeout(this._redrawHighlights.bind(this), 200)
+  }
+
+  _redrawHighlights() {
+    var selection = this.props.store.view.selection
+
+    this.point
+      .attr('opacity', (d) => {
+        if (selection.nodes.size === 0) return 0.25
+
+        return selection.pathNodes.has(d.id) ? 0.25 : 0.025
+      })
+      .attr('stroke-width', (d) => {
+        return (selection.nodes.has(d.id) || selection.pathNodes.has(d.id)) ? 3 : 0
+      })
+      .attr('stroke', (d) => {
+        return selection.nodes.has(d.id) ? 'red' : (
+          selection.pathNodes.has(d.id) ? 'purple' : 'black'
+        )
+      })
+
+    this.link
+      .attr('opacity', (l) => {
+        if (selection.nodes.size === 0) return 0.1
+
+        return (selection.pathNodes.has(l.source.id) && selection.pathNodes.has(l.target.id))
+          ? 0.25 : 0.025
+      })
   }
 
   render() {
