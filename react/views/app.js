@@ -6,7 +6,7 @@ import * as Redux from '../../redux'
 import { Flex, Box } from 'reflexbox'
 import data from '../../data/wuzzit_sample_data/visLevel1_7.json'
 import * as _ from 'lodash'
-import { StatesVis } from './'
+import { StatesVis, NodesMetaViewer } from './'
 import {ReactHeight} from 'react-height'
 
 let mapStateToProps = (state) => {
@@ -36,6 +36,7 @@ class AppRaw extends React.Component {
             <A.Card style={{ margin: '10px' }}>
               Dataset Info
             </A.Card>
+            <A.Card><NodesMetaViewer/></A.Card>
             <A.Collapse style={{ margin: '10px' }}>
               <A.Collapse.Panel header={'Saved views'}>
               <div>

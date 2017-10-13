@@ -13,6 +13,10 @@ export var defaultState = {
     dataset: { }, // name, data
     selection: {
       nodes: new Set(), pathNodes: new Set(), nodesClicked: new Set()
+    },
+    metaViewer: {
+      mouseover: null,
+      currentIndex: 0
     }
   },
 
@@ -47,8 +51,6 @@ function selectNodes(state, actionData) {
   function findPath(state, nodes) {
     var users = findIntersectedUsers(state, nodes)
 
-    console.log(users)
-
     return state.dataset.nodes.filter((node) => {
       return _.reduce(node.user_ids, (matched, id) => {
         return matched || users[id]
@@ -56,12 +58,25 @@ function selectNodes(state, actionData) {
     })
   }
 
+  var metaClicked = state.metaViewer.clicked
+
+  if (isClicked)
+    nodes.forEach(n => {
+      if (isOn) metaClicked[n.id] = true
+      else delete metaClicked[n.id]
+    })
+
   return {
     selection: {
       nodesClicked: isClicked ? interactedNodes : state.selection.nodesClicked,
       nodes: new Set(allSelectedNodes.map(n => n.id)),
       pathNodes: new Set(findPath(state, allSelectedNodes).map(n => n.id))
-    }
+    },
+
+    metaViewer: _.assign({}, state.metaViewer, {
+      mouseover: (!isClicked && isOn) ? nodes[0] : null,
+      clicked: _.assign({}, metaClicked)
+    })
   }
 }
 
@@ -80,6 +95,18 @@ function view(state, action) {
       return _.assign({}, state, { dataset: action.data })
     case A.SELECT_NODES:
       return _.assign({}, state, selectNodes(state, action.data))
+    case A.META_VIEWER_KEY_PRESS:
+      var index = state.metaViewer.currentIndex + action.data
+      var max = _.keys(state.metaViewer.clicked).length
+
+      if (index < 0) index = 0
+      if (index >= max) index = max - 1
+
+      return _.assign({}, state, {
+        metaViewer: _.assign({}, state.metaViewer, {
+          currentIndex: index
+        })
+      })
     default:
       return state || defaultState.view
   }

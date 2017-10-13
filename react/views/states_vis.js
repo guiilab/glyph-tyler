@@ -6,6 +6,7 @@ import * as Redux from '../../redux'
 import { Flex, Box } from 'reflexbox'
 import * as d3 from 'd3'
 import * as _ from 'lodash'
+import ReactJson from 'react-json-view'
 
 let mapStateToProps = (state) => {
   return { store: state }
@@ -193,10 +194,10 @@ class StatesVisRaw extends React.Component {
     var selection = this.props.store.view.selection
 
     this.point
-      .attr('opacity', (d) => {
-        if (selection.nodes.size === 0) return 0.25
+      .attr('r', (d) => {
+        if (selection.nodes.size === 0) return Math.sqrt(d.visits)
 
-        return selection.pathNodes.has(d.id) ? 0.25 : 0.025
+        return selection.pathNodes.has(d.id) ? Math.sqrt(d.visits) : 0
       })
       .attr('stroke-width', (d) => {
         return (selection.nodes.has(d.id) || selection.pathNodes.has(d.id)) ? 3 : 0
