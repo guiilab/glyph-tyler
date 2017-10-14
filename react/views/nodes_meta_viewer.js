@@ -36,8 +36,11 @@ class NodesMetaViewerRaw extends React.Component {
 
     return (
       <div>
-        <div>{metaViewer.currentIndex}</div>
-        <div>{nodesClicked.map(n => n.id).join(', ')}</div>
+        <div>{nodesClicked.map((n, i) => <span>
+          {(i ? ' | ' : '')} <span style={{ color: _.get(focusNode, 'id', 'fdsfs') === n.id ? 'red' : 'black' }}>
+            {i === metaViewer.currentIndex ? <u>{n.id}</u> : n.id}
+          </span>
+        </span>)}</div>
         <Flex>
           <Box>{nodesClicked[metaViewer.currentIndex] ?
             <ReactJson src={nodesClicked[metaViewer.currentIndex]} /> :
