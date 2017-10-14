@@ -32,20 +32,64 @@ class StatesVisRaw extends React.Component {
     var links = this.props.store.view.dataset.links
 
     var incomingMap = {}
+    var outcomingMap = {}
+
+    var nodesMap = _.chain(nodes).map(n => [n.id, n]).fromPairs().value()
 
     links.forEach((l) => {
       l.target = l.target_id
       l.source = l.source_id
 
       if (!incomingMap[l.target]) incomingMap[l.target] = []
+      if (!outcomingMap[l.source]) outcomingMap[l.source] = []
 
       incomingMap[l.target].push(l.source)
+      outcomingMap[l.source].push(l.target)
     })
 
-    console.log(incomingMap)
+    var statesAsEndPoints = _.chain(outcomingMap).toPairs()
+    .filter(p => nodesMap[p[0]].state_type === 'mid')
+    .map(p => {
+      var [source, targets] = p
+
+      var outUids = _.chain(targets)
+        .map(t => nodesMap[t].user_ids)
+        .flatten().uniq().value()
+
+      var inUids = _.uniq(nodesMap[source].user_ids)
+      var endUids = _.difference(inUids, outUids)
+
+      return [source, endUids]
+    }).fromPairs().value()
+
+    var quitNode = {
+      id: '-1',
+      user_ids: _.chain(statesAsEndPoints).values().flatten().uniq().value(),
+      visits: (_.chain(statesAsEndPoints).values().flatten().uniq().value()).length,
+      state_type: 'end-quit'
+    }
+
+    nodes.push(quitNode)
+    nodesMap['-1'] = quitNode
+    outcomingMap['-1'] = []
+    incomingMap['-1'] = _.keys(_.omitBy(statesAsEndPoints, v => !v.length))
+
+    links = links.concat(_.toPairs(statesAsEndPoints).map(p => {
+      var [sourceId, uids] = p
+
+      return {
+        id: sourceId + '_-1',
+        source: sourceId,
+        source_id: sourceId,
+        target: '-1',
+        target_id: '-1',
+        user_ids: uids,
+        weight: uids.length
+      }
+    }).filter(l => l.weight > 1))
 
     links = links.filter((l) => {
-      var source = l.source
+      var { source, target } = l
 
       while (true) {
         if (incomingMap[source].length > 1)
@@ -56,7 +100,7 @@ class StatesVisRaw extends React.Component {
 
       l.source = source
 
-      if (incomingMap[l.target].length === 1)
+      if (incomingMap[l.target].length === 1 && nodesMap[l.target].state_type === 'mid')
         return false
 
       return true
@@ -93,8 +137,8 @@ class StatesVisRaw extends React.Component {
         .attr('opacity', 0.25)
         .attr('fill', (d) => {
           return ({
-            start: 'red',
-            mid: 'blue',
+            start: 'blue',
+            mid: 'brown',
             end: 'green'
           })[d.state_type] || 'black'
         })
