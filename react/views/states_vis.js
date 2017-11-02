@@ -63,7 +63,7 @@ class StatesVisRaw extends React.Component {
     }).fromPairs().value()
 
     nodes.forEach((d) => {
-      if (!outcomingMap[d.id]) {
+      if (!outcomingMap[d.id] && d.state_type === 'mid') {
         outcomingMap[d.id] = '-1'
         statesAsEndPoints[d.id] = d.user_ids
       }
@@ -95,9 +95,9 @@ class StatesVisRaw extends React.Component {
       }
     }).filter(l => l.weight > 1))
 
-    var simplePathsIndex = {}
+    // var simplePathsIndex = {}
 
-    links = links.filter((l) => {
+    links.forEach((l) => {
       var originalLink = _.cloneDeep(l)
       var { source, target } = l
 
@@ -110,9 +110,8 @@ class StatesVisRaw extends React.Component {
         if (incomingMap[source].length > 1)
           break
 
-        source = incomingMap[source][0]
-
         l.midPoints.push(nodesMap[source])
+        source = incomingMap[source][0]
       }
 
       while (true) {
@@ -122,23 +121,24 @@ class StatesVisRaw extends React.Component {
         if (outcomingMap[target].length > 1)
           break
 
-        target = outcomingMap[target][0]
-
         l.midPoints.push(nodesMap[target])
+        target = outcomingMap[target][0]
       }
 
       l.source = source
       l.target = target
-
-      var simplePathKey = [source, target].join(':')
-
-      if (simplePathsIndex[simplePathKey]) {
-        simplePathsIndex[simplePathKey].push(originalLink)
-        return false
-      } else {
-        simplePathsIndex[simplePathKey] = [originalLink]
-        return true
-      }
+      //
+      // var simplePathKey = [source, target].join(':')
+      //
+      // return true
+      //
+      // if (simplePathsIndex[simplePathKey]) {
+      //   simplePathsIndex[simplePathKey].push(originalLink)
+      //   return false
+      // } else {
+      //   simplePathsIndex[simplePathKey] = [originalLink]
+      //   return true
+      // }
     })
 
     var scales = {
@@ -181,11 +181,17 @@ class StatesVisRaw extends React.Component {
     var x = (x) => x < 3*margin ? 3*margin : Math.min(width - 3*margin, x)
     var y = (y) => y < 2*margin ? 2*margin : Math.min(height - 2*margin, y)
 
+    var usersCount = _.chain(nodes).map(d => d.user_ids).flatten().uniq().value().length * 1.0
+    var endNodesBySignificance = _.chain(nodes).filter(d => d.state_type === 'end')
+          .map((d) => [d.id, d.user_ids.length/usersCount > 0.1 ? true : false])
+          .fromPairs()
+          .value()
+
     var simulation = d3.forceSimulation(nodes)
             .force('charge', d3.forceManyBody())
-            .force('link', d3.forceLink(links).id((d) => d.id).distance(30).strength(1))
+            .force('link', d3.forceLink(links).id((d) => d.id).distance(50).strength(1))
             .force('collision', d3.forceCollide().radius((d) => {
-              return (['start', 'end', 'end-quit'].indexOf(d.state_type) > -1) ? 20 : 5
+              return (['start', 'end', 'end-quit'].indexOf(d.state_type) > -1) ? 40 : 5
             }).strength(1))
             .on('tick', () => {
               point
@@ -200,12 +206,13 @@ class StatesVisRaw extends React.Component {
                       d.fy = height - margin
                       break
                     case 'end':
-                      if (x(d.x)*1.0/width > 0.75*y(d.y)/height) {
-                        d.x = width - margin
-                        d.y = y(d.y)
-                      } else {
+                      // if (x(d.x)*1.0/width > 0.75*y(d.y)/height) {
+                      if (endNodesBySignificance[d.id]) {
                         d.y = height - margin
                         d.x = x(d.x)
+                      } else {
+                        d.x = width - margin
+                        d.y = y(d.y)
                       }
                       break
                     default:
