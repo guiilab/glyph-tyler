@@ -277,12 +277,6 @@ class StatesVisRaw extends React.Component {
         return (selection.pathNodes.has(d.id))
           ? 1 : 0.025
       })
-      .attr('z-index', (d) => {
-        if (selection.nodes.size === 0) return 0
-
-        return (selection.pathNodes.has(d.id))
-          ? 1 : 0
-      })
 
     this.link
       .attr('opacity', (l) => {
@@ -291,11 +285,11 @@ class StatesVisRaw extends React.Component {
         return (selection.pathNodes.has(l.source.id) && selection.pathNodes.has(l.target.id))
           ? 0.25 : 0.025
       })
-      .attr('z-index', (l) => {
-        if (selection.nodes.size === 0) return 0
+      .attr('stroke-width', (l) => {
+        if (selection.nodes.size === 0) return 2 + Math.sqrt(l.weight)
 
         return (selection.pathNodes.has(l.source.id) && selection.pathNodes.has(l.target.id))
-          ? 1 : 0
+          ? 2 + Math.sqrt(l.weight) : 0
       })
   }
 
