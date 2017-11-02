@@ -36,9 +36,15 @@ class StatesVisRaw extends React.Component {
 
     var nodesMap = _.chain(nodes).map(n => [n.id, n]).fromPairs().value()
 
+    nodes.forEach(n => {
+      n.state_type = n.type || n.state_type
+      n.visits = n.visits || n.user_ids.length
+    })
+
     links.forEach((l) => {
-      l.target = l.target_id
-      l.source = l.source_id
+      l.weight = l.weight || l.user_ids.length
+      l.target = l.target_id || l.target
+      l.source = l.source_id || l.source
 
       if (!incomingMap[l.target]) incomingMap[l.target] = []
       if (!outcomingMap[l.source]) outcomingMap[l.source] = []
@@ -187,9 +193,11 @@ class StatesVisRaw extends React.Component {
           .fromPairs()
           .value()
 
+    console.log(width, height, width*height, links.length, width*height*1.0/links.length/5)
+
     var simulation = d3.forceSimulation(nodes)
             .force('charge', d3.forceManyBody())
-            .force('link', d3.forceLink(links).id((d) => d.id).distance(50).strength(1))
+            .force('link', d3.forceLink(links).id((d) => d.id).distance(width*height*1.0/links.length/5).strength(1))
             .force('collision', d3.forceCollide().radius((d) => {
               return (['start', 'end', 'end-quit'].indexOf(d.state_type) > -1) ? 40 : 5
             }).strength(1))
