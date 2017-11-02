@@ -62,6 +62,13 @@ class StatesVisRaw extends React.Component {
       return [source, endUids]
     }).fromPairs().value()
 
+    nodes.forEach((d) => {
+      if (!outcomingMap[d.id]) {
+        outcomingMap[d.id] = '-1'
+        statesAsEndPoints[d.id] = d.user_ids
+      }
+    })
+
     var quitNode = {
       id: '-1',
       user_ids: _.chain(statesAsEndPoints).values().flatten().uniq().value(),
@@ -88,12 +95,18 @@ class StatesVisRaw extends React.Component {
       }
     }).filter(l => l.weight > 1))
 
+    var simplePathsIndex = {}
+
     links = links.filter((l) => {
+      var originalLink = _.cloneDeep(l)
       var { source, target } = l
 
       l.midPoints = []
 
       while (true) {
+        if (nodesMap[source].state_type !== 'mid')
+          break
+
         if (incomingMap[source].length > 1)
           break
 
@@ -102,12 +115,30 @@ class StatesVisRaw extends React.Component {
         l.midPoints.push(nodesMap[source])
       }
 
+      while (true) {
+        if (nodesMap[target].state_type !== 'mid')
+          break
+
+        if (outcomingMap[target].length > 1)
+          break
+
+        target = outcomingMap[target][0]
+
+        l.midPoints.push(nodesMap[target])
+      }
+
       l.source = source
+      l.target = target
 
-      if (incomingMap[l.target].length === 1 && nodesMap[l.target].state_type === 'mid')
+      var simplePathKey = [source, target].join(':')
+
+      if (simplePathsIndex[simplePathKey]) {
+        simplePathsIndex[simplePathKey].push(originalLink)
         return false
-
-      return true
+      } else {
+        simplePathsIndex[simplePathKey] = [originalLink]
+        return true
+      }
     })
 
     var scales = {
