@@ -101,7 +101,7 @@ class StatesVisRaw extends React.Component {
       }
     }).filter(l => l.weight > 1))
 
-    // var simplePathsIndex = {}
+    var simplePathsIndex = {}
 
     links.forEach((l) => {
       var originalLink = _.cloneDeep(l)
@@ -133,18 +133,14 @@ class StatesVisRaw extends React.Component {
 
       l.source = source
       l.target = target
-      //
-      // var simplePathKey = [source, target].join(':')
-      //
-      // return true
-      //
-      // if (simplePathsIndex[simplePathKey]) {
-      //   simplePathsIndex[simplePathKey].push(originalLink)
-      //   return false
-      // } else {
-      //   simplePathsIndex[simplePathKey] = [originalLink]
-      //   return true
-      // }
+
+      var simplePathKey = [source, target].join(':')
+
+      if (simplePathsIndex[simplePathKey]) {
+        simplePathsIndex[simplePathKey].push(originalLink)
+      } else {
+        simplePathsIndex[simplePathKey] = [originalLink]
+      }
     })
 
     var scales = {
@@ -161,7 +157,7 @@ class StatesVisRaw extends React.Component {
 
     link
       .attr('stroke-width', l => 2 + Math.sqrt(l.weight))
-      .attr('stroke', 'black')
+      .attr('stroke', l => l.midPoints.length === 0 ? 'black' : 'purple' )
       .attr('opacity', 0.1)
 
 
@@ -192,8 +188,6 @@ class StatesVisRaw extends React.Component {
           .map((d) => [d.id, d.user_ids.length/usersCount > 0.1 ? true : false])
           .fromPairs()
           .value()
-
-    console.log(width, height, width*height, links.length, width*height*1.0/links.length/5)
 
     var simulation = d3.forceSimulation(nodes)
             .force('charge', d3.forceManyBody())
@@ -248,9 +242,26 @@ class StatesVisRaw extends React.Component {
                 // console.log(l)
               })
 
-              link.attr('x1', (d) => d.source.x )
+              var getShiftLinkAtSource = l => {
+                var { x, y } = l.source
+                var sourceRadius = 2 + Math.sqrt(l.source.visits)
+
+                var dx = l.target.x - x
+                var dy = l.target.y - y
+
+                // orthoginal vector
+                var dyP = dx/(Math.sqrt(dx*dx + dy*dy) + 0.01)
+                var dxP = -dyP*dy/(dx + 0.01)
+
+                return l.midPoints.length > 0 ? {
+                  x: x + sourceRadius*dxP,
+                  y: y + sourceRadius*dyP
+                } : { x, y }
+              }
+
+              link.attr('x1', (d) => getShiftLinkAtSource(d).x )
                   .attr('x2', (d) => d.target.x )
-                  .attr('y1', (d) => d.source.y )
+                  .attr('y1', (d) => getShiftLinkAtSource(d).y )
                   .attr('y2', (d) => d.target.y )
 
               point
@@ -282,7 +293,7 @@ class StatesVisRaw extends React.Component {
       .on('dblclick', (node) => { this._onNodesSelection([node], false, true) })
 
     link
-      .on('mouseover', (l) => { this._onNodesSelection([l.source].concat(l.midPoints).concat([l.target]), true) })
+      .on('mouseover', (l) => { console.log(l.midPoints, simplePathsIndex[[l.source.id, l.target.id].join(':')]); this._onNodesSelection([l.source].concat(l.midPoints).concat([l.target]), true) })
       .on('mouseout', (l) => { this._onNodesSelection([l.source].concat(l.midPoints).concat([l.target]), false) })
       .on('click', (l) => { this._onNodesSelection([l.source].concat(l.midPoints).concat([l.target]), true, true) })
       .on('dblclick', (l) => { this._onNodesSelection([l.source].concat(l.midPoints).concat([l.target]), false, true) })
