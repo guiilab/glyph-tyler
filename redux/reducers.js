@@ -48,6 +48,7 @@ function selectNodes(state, actionData) {
     return _.chain(users).toPairs().filter(p => p[1].size === nodes.length).fromPairs().value()
   }
 
+  // TODO: debug on find paths
   function findPath(state, nodes) {
     var users = findIntersectedUsers(state, nodes)
 

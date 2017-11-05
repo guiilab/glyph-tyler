@@ -157,7 +157,7 @@ class StatesVisRaw extends React.Component {
 
     link
       .attr('stroke-width', l => 2 + Math.sqrt(l.weight))
-      .attr('stroke', l => l.midPoints.length === 0 ? 'black' : 'purple' )
+      .attr('stroke', l => l.midPoints.length === 0 ? 'url(#e)' : 'purple' )
       .attr('opacity', 0.1)
 
 
@@ -353,7 +353,14 @@ class StatesVisRaw extends React.Component {
   render() {
     return (
       <div ref={ (divElement) => this.divElement = divElement}>
-        <svg/>
+        <svg>
+          <defs>
+            <linearGradient id='e' x1='0' y1='0' x2='100%' y2='100%'>
+                <stop stopColor='grey' offset='0' />
+                <stop stopColor='brown' offset='100%' />
+            </linearGradient>
+          </defs>
+        </svg>
       </div>
     )
   }
