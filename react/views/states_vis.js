@@ -157,7 +157,7 @@ class StatesVisRaw extends React.Component {
 
     link
       .attr('stroke-width', l => 2 + Math.sqrt(l.weight))
-      .attr('stroke', l => l.midPoints.length === 0 ? 'url(#e)' : 'purple' )
+      .attr('stroke', l => l.midPoints.length === 0 ? 'url(#edge)' : 'url(#path)' )
       .attr('opacity', 0.1)
 
 
@@ -340,7 +340,7 @@ class StatesVisRaw extends React.Component {
         if (selection.nodes.size === 0) return 0.1
 
         return (selection.pathNodes.has(l.source.id) && selection.pathNodes.has(l.target.id))
-          ? 0.25 : 0.025
+          ? 1 : 0.025
       })
       .attr('stroke-width', (l) => {
         if (selection.nodes.size === 0) return 2 + Math.sqrt(l.weight)
@@ -355,9 +355,13 @@ class StatesVisRaw extends React.Component {
       <div ref={ (divElement) => this.divElement = divElement}>
         <svg>
           <defs>
-            <linearGradient id='e' x1='0' y1='0' x2='100%' y2='100%'>
+            <linearGradient id='edge' x1='0' y1='0' x2='100%' y2='100%'>
                 <stop stopColor='grey' offset='0' />
-                <stop stopColor='brown' offset='100%' />
+                <stop stopColor='yellow' offset='100%' />
+            </linearGradient>
+            <linearGradient id='path' x1='0' y1='0' x2='100%' y2='100%'>
+                <stop stopColor='purple' offset='0' />
+                <stop stopColor='yellow' offset='100%' />
             </linearGradient>
           </defs>
         </svg>
