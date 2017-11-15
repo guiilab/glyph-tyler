@@ -157,7 +157,7 @@ class StatesVisRaw extends React.Component {
 
     link
       .attr('stroke-width', l => 2 + Math.sqrt(l.weight))
-      .attr('stroke', l => l.midPoints.length === 0 ? 'url(#edge)' : 'url(#path)' )
+      .attr('stroke', l => l.midPoints.length === 0 ? (l.source < l.target ? '#94a3b6' : '#a3b694') : '#b6a794' )
       .attr('opacity', 0.1)
 
 
@@ -245,6 +245,7 @@ class StatesVisRaw extends React.Component {
               var getShiftLinkAtSource = l => {
                 var { x, y } = l.source
                 var sourceRadius = 2 + Math.sqrt(l.source.visits)
+                var edgeWidth = 2 + Math.sqrt(l.weight)
 
                 var dx = l.target.x - x
                 var dy = l.target.y - y
@@ -253,10 +254,12 @@ class StatesVisRaw extends React.Component {
                 var dyP = dx/(Math.sqrt(dx*dx + dy*dy) + 0.01)
                 var dxP = -dyP*dy/(dx + 0.01)
 
-                return l.midPoints.length > 0 ? {
-                  x: x + sourceRadius*dxP,
-                  y: y + sourceRadius*dyP
-                } : { x, y }
+                var shiftLength = l.midPoints.length > 0 ? sourceRadius : edgeWidth
+
+                return {
+                  x: x + shiftLength*dxP,
+                  y: y + shiftLength*dyP
+                }
               }
 
               link.attr('x1', (d) => getShiftLinkAtSource(d).x )
@@ -293,7 +296,7 @@ class StatesVisRaw extends React.Component {
       .on('dblclick', (node) => { this._onNodesSelection([node], false, true) })
 
     link
-      .on('mouseover', (l) => { console.log(l.midPoints, simplePathsIndex[[l.source.id, l.target.id].join(':')]); this._onNodesSelection([l.source].concat(l.midPoints).concat([l.target]), true) })
+      .on('mouseover', (l) => { this._onNodesSelection([l.source].concat(l.midPoints).concat([l.target]), true) })
       .on('mouseout', (l) => { this._onNodesSelection([l.source].concat(l.midPoints).concat([l.target]), false) })
       .on('click', (l) => { this._onNodesSelection([l.source].concat(l.midPoints).concat([l.target]), true, true) })
       .on('dblclick', (l) => { this._onNodesSelection([l.source].concat(l.midPoints).concat([l.target]), false, true) })
@@ -340,7 +343,7 @@ class StatesVisRaw extends React.Component {
         if (selection.nodes.size === 0) return 0.1
 
         return (selection.pathNodes.has(l.source.id) && selection.pathNodes.has(l.target.id))
-          ? 1 : 0.025
+          ? 0.5 : 0.025
       })
       .attr('stroke-width', (l) => {
         if (selection.nodes.size === 0) return 2 + Math.sqrt(l.weight)
