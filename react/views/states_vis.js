@@ -113,7 +113,7 @@ class StatesVisRaw extends React.Component {
         if (nodesMap[source].state_type !== 'mid')
           break
 
-        if (incomingMap[source].length > 1)
+        if (outcomingMap[source].length > 1 || incomingMap[source].length > 1)
           break
 
         l.midPoints.push(nodesMap[source])
@@ -124,7 +124,7 @@ class StatesVisRaw extends React.Component {
         if (nodesMap[target].state_type !== 'mid')
           break
 
-        if (outcomingMap[target].length > 1)
+        if (outcomingMap[target].length > 1 || incomingMap[target].length > 1)
           break
 
         l.midPoints.push(nodesMap[target])
