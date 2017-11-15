@@ -70,7 +70,7 @@ class StatesVisRaw extends React.Component {
 
     nodes.forEach((d) => {
       if (!outcomingMap[d.id] && d.state_type === 'mid') {
-        outcomingMap[d.id] = '-1'
+        outcomingMap[d.id] = ['-1']
         statesAsEndPoints[d.id] = d.user_ids
       }
     })
