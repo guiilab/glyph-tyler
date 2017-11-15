@@ -4,10 +4,10 @@ import ReactDOM from 'react-dom'
 import * as RR from 'react-redux'
 import * as Redux from '../../redux'
 import { Flex, Box } from 'reflexbox'
-import data from '../../data/wuzzit_sample_data/visLevel2_2.json'
+import { data } from '../misc'
 import * as _ from 'lodash'
 import { StatesVis, NodesMetaViewer } from './'
-import {ReactHeight} from 'react-height'
+import { ReactHeight } from 'react-height'
 
 let mapStateToProps = (state) => {
   return { store: state }
