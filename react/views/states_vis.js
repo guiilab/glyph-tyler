@@ -156,8 +156,8 @@ class StatesVisRaw extends React.Component {
         .classed('d3-link', true)
 
     link
-      .attr('stroke-width', l => 2 + Math.sqrt(l.weight))
-      .attr('stroke', l => l.midPoints.length === 0 ? (l.source < l.target ? '#94a3b6' : '#a3b694') : '#b6a794' )
+      .attr('stroke-width', l => 3 + Math.sqrt(l.weight))
+      .attr('stroke', l => l.midPoints.length === 0 ? (l.source < l.target ? '#94a3b6' : '#a3b694') : '#c7c00d' )
       .attr('opacity', 0.1)
 
 
@@ -244,8 +244,8 @@ class StatesVisRaw extends React.Component {
 
               var getShiftLinkAtSource = l => {
                 var { x, y } = l.source
-                var sourceRadius = 2 + Math.sqrt(l.source.visits)
-                var edgeWidth = 2 + Math.sqrt(l.weight)
+                var sourceRadius = 3 + Math.sqrt(l.source.visits)
+                var edgeWidth = 3 + Math.sqrt(l.weight)
 
                 var dx = l.target.x - x
                 var dy = l.target.y - y
@@ -346,10 +346,10 @@ class StatesVisRaw extends React.Component {
           ? 0.5 : 0.025
       })
       .attr('stroke-width', (l) => {
-        if (selection.nodes.size === 0) return 2 + Math.sqrt(l.weight)
+        if (selection.nodes.size === 0) return 3 + Math.sqrt(l.weight)
 
         return (selection.pathNodes.has(l.source.id) && selection.pathNodes.has(l.target.id))
-          ? 2 + Math.sqrt(l.weight) : 0
+          ? 3 + Math.sqrt(l.weight) : 0
       })
   }
 
