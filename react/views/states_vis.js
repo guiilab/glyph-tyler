@@ -143,6 +143,38 @@ class StatesVisRaw extends React.Component {
       }
     })
 
+    // this._setStuckNodes(null, nodes, nodesMap, outcomingMap)
+
+    var computeResidualQuitNodes = function() {
+      var endStatesUsers = _.chain(nodes).filter(n => n.state_type !== 'mid' && n.state_type !== 'start')
+            .map(n => n.user_ids).flatten().reduce((obj, v) => _.set(obj, v, true), {}).value()
+
+      nodes.forEach(n => {
+        n.user_ids.forEach(pid => {
+          if (endStatesUsers[pid]) n.found = true
+        })
+      })
+
+      nodes.forEach(n => {
+        if (!n.found && n.state_type === 'mid') {
+          nodesMap['-1'].user_ids = _.union(nodesMap['-1'].user_ids, n.user_ids)
+          
+          links.push({
+            id: n.id + '_-1',
+            source: n.id,
+            source_id: n.id,
+            target: '-1',
+            target_id: '-1',
+            user_ids: n.user_ids,
+            weight: n.user_ids.length,
+            midPoints: []
+          })
+        }
+      })
+    }
+
+    computeResidualQuitNodes()
+
     var scales = {
       x: d3.scaleLinear().domain(d3.extent(nodes.map((d) => d.distance_start))).range([margin, width - margin]),
       y: d3.scaleLinear().domain(d3.extent(nodes.map((d) => parseInt(d.id)))).range([margin, height - margin]),
@@ -177,7 +209,7 @@ class StatesVisRaw extends React.Component {
             start: 'blue',
             end: 'green',
             'end-quit': 'red'
-          })[d.state_type] || 'grey'
+          })[d.state_type] || (d.found ? 'grey' : 'red')
         })
 
     var x = (x) => x < 3*margin ? 3*margin : Math.min(width - 3*margin, x)
@@ -228,6 +260,9 @@ class StatesVisRaw extends React.Component {
 
                 // if (l.source.x && l.source.y && l.target.x && l.target.y && !scale)
                 //   console.log(l.source.x, l.source.y, l.target.x, l.target.y, scale)
+
+                if (l.target.state_type === 'end-quit')
+                  scale = scale*3
 
                 if (l.source.state_type !== 'mid') {
                   l.target.x = l.source.x + scale*(l.target.x - l.source.x)
@@ -304,6 +339,43 @@ class StatesVisRaw extends React.Component {
     this.point = point
     this.link = link
   }
+
+  // _setStuckNodes(node, nodes, nodesMap, outcomingMap, nodesPathVisited) {
+  //   var startNode = node
+  //   var path = nodesPathVisited || {}
+  //
+  //   if (!startNode)
+  //     nodes.forEach(n => { if (n.state_type === 'start') startNode = n })
+  //   else {
+  //     if (startNode.state_type === 'end' || startNode.state_type === 'end-quit') {
+  //       _.keys(path).forEach(nid => { nodesMap[nid].found = true })
+  //       return
+  //     }
+  //   }
+  //
+  //   path[startNode.id] = true
+  //
+  //   var continues = outcomingMap[startNode.id].filter(nid => !path[nid])
+  //
+  //   continues.forEach(nid => {
+  //     if (nodesMap[nid].found) {
+  //       nodesMap[startNode.id].found = true
+  //     } else {
+  //       this._setStuckNodes(nodesMap[nid], nodes, nodesMap, outcomingMap, path)
+  //     }
+  //   })
+  //
+  //   delete path[startNode.id]
+  //
+  //   if (!node) {
+  //
+  //   }
+  //
+  //   if (!node) {
+  //     nodes.forEach(nid => {(outcomingMap[nid] || []).forEach(toNid => {if (nodesMap[toNid].found) nodesMap[nid].found = true})})
+  //     _.reverse(nodes).forEach(nid => {(outcomingMap[nid] || []).forEach(toNid => {if (nodesMap[toNid].found) nodesMap[nid].found = true})})
+  //   }
+  // }
 
   _onNodesSelection(nodes, isOn, isClicked) {
     this.props.dispatch({

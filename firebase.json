@@ -1,0 +1,7 @@
+{
+  "database": {
+  },
+  "hosting": {
+    "public": "public"
+  }
+}
