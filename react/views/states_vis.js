@@ -158,7 +158,7 @@ class StatesVisRaw extends React.Component {
       nodes.forEach(n => {
         if (!n.found && n.state_type === 'mid') {
           nodesMap['-1'].user_ids = _.union(nodesMap['-1'].user_ids, n.user_ids)
-          
+
           links.push({
             id: n.id + '_-1',
             source: n.id,
@@ -418,6 +418,10 @@ class StatesVisRaw extends React.Component {
           ? 0.5 : 0.025
       })
       .attr('stroke-width', (l) => {
+        if (
+          selection.users.length > 0 && _.chain(selection.users).intersection(l.target.user_ids).intersection(l.source.user_ids).uniq().value().length === 0
+        ) return 0
+
         if (selection.nodes.size === 0) return 3 + Math.sqrt(l.weight)
 
         return (selection.pathNodes.has(l.source.id) && selection.pathNodes.has(l.target.id))

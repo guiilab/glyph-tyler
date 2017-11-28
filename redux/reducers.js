@@ -48,7 +48,6 @@ function selectNodes(state, actionData) {
     return _.chain(users).toPairs().filter(p => p[1].size === nodes.length).fromPairs().value()
   }
 
-  // TODO: debug on find paths
   function findPath(state, nodes) {
     var users = findIntersectedUsers(state, nodes)
 
@@ -71,7 +70,8 @@ function selectNodes(state, actionData) {
     selection: {
       nodesClicked: isClicked ? interactedNodes : state.selection.nodesClicked,
       nodes: new Set(allSelectedNodes.map(n => n.id)),
-      pathNodes: new Set(findPath(state, allSelectedNodes).map(n => n.id))
+      pathNodes: new Set(findPath(state, allSelectedNodes).map(n => n.id)),
+      users: _.chain(allSelectedNodes).map(n => n.user_ids).flatten().uniq().value()
     },
 
     metaViewer: _.assign({}, state.metaViewer, {
