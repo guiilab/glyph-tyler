@@ -22,7 +22,7 @@ class StatesVisRaw extends React.Component {
     var height = this.props.store.app.visHeight/2
     var margin = 20
 
-    var svg = d3.select('svg')
+    var svg = d3.select('#state')
       .attr('width', width)
       .attr('height', height)
 
@@ -432,7 +432,7 @@ class StatesVisRaw extends React.Component {
   render() {
     return (
       <div ref={ (divElement) => this.divElement = divElement}>
-        <svg>
+        <svg id='state'>
           <defs>
             <linearGradient id='edge' x1='0' y1='0' x2='100%' y2='100%'>
                 <stop stopColor='grey' offset='0' />

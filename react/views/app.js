@@ -6,7 +6,7 @@ import * as Redux from '../../redux'
 import { Flex, Box } from 'reflexbox'
 import { data } from '../misc'
 import * as _ from 'lodash'
-import { StatesVis, NodesMetaViewer } from './'
+import { StatesVis, TrajectoriesVis, NodesMetaViewer } from './'
 import { ReactHeight } from 'react-height'
 
 let mapStateToProps = (state) => {
@@ -94,7 +94,7 @@ class AppRaw extends React.Component {
                 {(!_.isEmpty(store.view.dataset) && store.app.visHeight) ? <StatesVis /> : null}
               </div>
               <A.Card style={{ height: '45vh', width:'100%' }}>
-                Trajectories clusters view
+                {(!_.isEmpty(store.view.dataset) && store.app.visHeight) ? <TrajectoriesVis /> : null}
               </A.Card>
             </ReactHeight>
           </A.Layout.Content>
