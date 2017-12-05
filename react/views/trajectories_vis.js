@@ -106,6 +106,11 @@ class TrajectoriesVisRaw extends React.Component {
     this.link = link
   }
 
+  componentWillReceiveProps(nextProps) {
+    if (this.props.store.view.updateTime !== nextProps.store.view.updateTime)
+      this._redrawHighlights(nextProps)
+  }
+
   _onNodesSelection(nodes, isOn, isClicked) {
     this.props.dispatch({
       type: Redux.SELECT_NODES,
@@ -115,46 +120,17 @@ class TrajectoriesVisRaw extends React.Component {
     setTimeout(this._redrawHighlights.bind(this), 200)
   }
 
-  _redrawHighlights() {
-    var selection = this.props.store.view.selection
+  _redrawHighlights(props) {
+    var props = props || this.props
+
+    if (!this.point || !this.link)
+      return
+
+    var selection = props.store.view.selection
 
     this.point
-      .attr('r', (d) => {
-        if (selection.nodes.size === 0) return 1 + Math.sqrt(d.visits)
-
-        return selection.pathNodes.has(d.id) ? 1 + Math.sqrt(d.visits) : 0
-      })
-      .attr('stroke-width', (d) => {
-        return (selection.nodes.has(d.id) || selection.pathNodes.has(d.id)) ? 2 : 0
-      })
-      .attr('stroke', (d) => {
-        return selection.nodes.has(d.id) ? 'yellow' : (
-          selection.pathNodes.has(d.id) ? 'purple' : 'black'
-        )
-      })
       .attr('opacity', (d) => {
-        if (selection.nodes.size === 0) return 0.25
-
-        return (selection.pathNodes.has(d.id))
-          ? 1 : 0.025
-      })
-
-    this.link
-      .attr('opacity', (l) => {
-        if (selection.nodes.size === 0) return 0.1
-
-        return (selection.pathNodes.has(l.source.id) && selection.pathNodes.has(l.target.id))
-          ? 0.5 : 0.025
-      })
-      .attr('stroke-width', (l) => {
-        if (
-          selection.users.length > 0 && _.chain(selection.users).intersection(l.target.user_ids).intersection(l.source.user_ids).uniq().value().length === 0
-        ) return 0
-
-        if (selection.nodes.size === 0) return 3 + Math.sqrt(l.weight)
-
-        return (selection.pathNodes.has(l.source.id) && selection.pathNodes.has(l.target.id))
-          ? 3 + Math.sqrt(l.weight) : 0
+        return _.intersection(d.user_ids.map(id => id + ''), _.keys(selection.users)).length === 0 && selection.nodes.size > 0 ? 0.05 : 0.25
       })
   }
 

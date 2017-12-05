@@ -93,9 +93,9 @@ class AppRaw extends React.Component {
               <div style={{ height: '45vh', width:'100%' }}>
                 {(!_.isEmpty(store.view.dataset) && store.app.visHeight) ? <StatesVis /> : null}
               </div>
-              <A.Card style={{ height: '45vh', width:'100%' }}>
+              <div style={{ height: '45vh', width:'100%' }}>
                 {(!_.isEmpty(store.view.dataset) && store.app.visHeight) ? <TrajectoriesVis /> : null}
-              </A.Card>
+              </div>
             </ReactHeight>
           </A.Layout.Content>
         </A.Layout>

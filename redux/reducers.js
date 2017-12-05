@@ -3,6 +3,7 @@ var combineReducers = require('redux').combineReducers
 var _ = require('lodash')
 var ReduxResponsive = require('redux-responsive')
 var RRR = require('react-router-redux')
+var moment = require('moment')
 
 export var defaultState = {
   app: {
@@ -10,9 +11,10 @@ export var defaultState = {
   },
 
   view: {
+    updateTime: moment.utc().valueOf(),
     dataset: { }, // name, data
     selection: {
-      nodes: new Set(), pathNodes: new Set(), nodesClicked: new Set()
+      nodes: new Set(), pathNodes: new Set(), nodesClicked: new Set(), users: []
     },
     metaViewer: {
       mouseover: null,
@@ -71,7 +73,7 @@ function selectNodes(state, actionData) {
       nodesClicked: isClicked ? interactedNodes : state.selection.nodesClicked,
       nodes: new Set(allSelectedNodes.map(n => n.id)),
       pathNodes: new Set(findPath(state, allSelectedNodes).map(n => n.id)),
-      users: _.chain(allSelectedNodes).map(n => n.user_ids).flatten().uniq().value()
+      users: findIntersectedUsers(state, allSelectedNodes)
     },
 
     metaViewer: _.assign({}, state.metaViewer, {
@@ -91,26 +93,32 @@ function app(state, action) {
 }
 
 function view(state, action) {
-  switch (action.type) {
-    case A.LOAD_DATA_SET:
-      return _.assign({}, state, { dataset: action.data })
-    case A.SELECT_NODES:
-      return _.assign({}, state, selectNodes(state, action.data))
-    case A.META_VIEWER_KEY_PRESS:
-      var index = state.metaViewer.currentIndex + action.data
-      var max = _.keys(state.metaViewer.clicked).length
+  var o = (() => {
+    switch (action.type) {
+      case A.LOAD_DATA_SET:
+        return _.assign({}, state, { dataset: action.data })
+      case A.SELECT_NODES:
+        return _.assign({}, state, selectNodes(state, action.data))
+      case A.META_VIEWER_KEY_PRESS:
+        var index = state.metaViewer.currentIndex + action.data
+        var max = _.keys(state.metaViewer.clicked).length
 
-      if (index < 0) index = 0
-      if (index >= max) index = max - 1
+        if (index < 0) index = 0
+        if (index >= max) index = max - 1
 
-      return _.assign({}, state, {
-        metaViewer: _.assign({}, state.metaViewer, {
-          currentIndex: index
+        return _.assign({}, state, {
+          metaViewer: _.assign({}, state.metaViewer, {
+            currentIndex: index
+          })
         })
-      })
-    default:
-      return state || defaultState.view
-  }
+      default:
+        return state || defaultState.view
+    }
+  })()
+
+  o.updateTime = moment.utc().valueOf()
+
+  return o
 }
 
 function index() {

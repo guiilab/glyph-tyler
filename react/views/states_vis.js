@@ -424,8 +424,11 @@ class StatesVisRaw extends React.Component {
 
         if (selection.nodes.size === 0) return 3 + Math.sqrt(l.weight)
 
-        return (selection.pathNodes.has(l.source.id) && selection.pathNodes.has(l.target.id))
-          ? 3 + Math.sqrt(l.weight) : 0
+        return _.reduce(
+          l.midPoints.map(d => d.id).concat([l.source.id, l.target.id]),
+          (res, pid) => { return selection.pathNodes.has(pid) && res },
+          true
+        ) ? 3 + Math.sqrt(l.weight) : 0
       })
   }
 
