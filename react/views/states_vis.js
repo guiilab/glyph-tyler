@@ -278,29 +278,9 @@ class StatesVisRaw extends React.Component {
               //   // console.log(l)
               // })
 
-              var getShiftLinkAtSource = l => {
-                var { x, y } = l.source
-                var sourceRadius = 2*Math.sqrt(l.source.visits)
-                var edgeWidth = 2*Math.sqrt(l.weight)
-
-                var dx = l.target.x - x
-                var dy = l.target.y - y
-
-                // orthoginal vector
-                var dyP = dx/(Math.sqrt(dx*dx + dy*dy) + 0.01)
-                var dxP = -dyP*dy/(dx + 0.01)
-
-                var shiftLength = l.midPoints.length > 0 ? sourceRadius : edgeWidth
-
-                return {
-                  x: x + shiftLength*dxP,
-                  y: y + shiftLength*dyP
-                }
-              }
-
-              link.attr('x1', (d) => getShiftLinkAtSource(d).x )
+              link.attr('x1', (d) => this._getShiftLinkAtSource(d).x )
                   .attr('x2', (d) => d.target.x )
-                  .attr('y1', (d) => getShiftLinkAtSource(d).y )
+                  .attr('y1', (d) => this._getShiftLinkAtSource(d).y )
                   .attr('y2', (d) => d.target.y )
 
               point
@@ -378,6 +358,38 @@ class StatesVisRaw extends React.Component {
   //   }
   // }
 
+  _getShiftLinkAtSource(l, checkProps) {
+    var selection = this.props.store.view.selection
+
+    var { x, y } = l.source
+    var sourceRadius = selection.nodes.size === 0 ? 2*Math.sqrt(l.source.visits) : 2*Math.sqrt(_.intersection(_.keys(selection.users).map(i=>parseInt(i)), l.source.user_ids).length)
+    var edgeWidth = 2*Math.sqrt(l.weight)
+
+    if (selection.nodes.size > 0) {
+      var intersectedUids = _.reduce(
+        l.midPoints.map(d => d.user_ids).concat([l.source.user_ids, l.target.user_ids]),
+        (res, uids) => { return _.intersection(res, uids) },
+        _.keys(selection.users).map(i=>parseInt(i))
+      )
+
+      edgeWidth = 2*Math.sqrt(intersectedUids.length ? intersectedUids.length + 2 : 0)
+    }
+
+    var dx = l.target.x - x
+    var dy = l.target.y - y
+
+    // orthoginal vector
+    var dyP = dx/(Math.sqrt(dx*dx + dy*dy) + 0.01)
+    var dxP = -dyP*dy/(dx + 0.01)
+
+    var shiftLength = l.midPoints.length > 0 ? sourceRadius : edgeWidth
+
+    return {
+      x: x + shiftLength*dxP,
+      y: y + shiftLength*dyP
+    }
+  }
+
   _onNodesSelection(nodes, isOn, isClicked) {
     this.props.dispatch({
       type: Redux.SELECT_NODES,
@@ -391,10 +403,11 @@ class StatesVisRaw extends React.Component {
     var selection = this.props.store.view.selection
 
     this.point
+      .transition().duration(500).ease(d3.easePoly.exponent(2))
       .attr('r', (d) => {
         if (selection.nodes.size === 0) return 2*Math.sqrt(d.visits)
 
-        return selection.pathNodes.has(d.id) ? 2*Math.sqrt(d.visits) : 0
+        return selection.pathNodes.has(d.id) ? 2*Math.sqrt(_.intersection(_.keys(selection.users).map(i=>parseInt(i)), d.user_ids).length) : 0
       })
       .attr('stroke-width', (d) => {
         return (selection.nodes.has(d.id) || selection.pathNodes.has(d.id)) ? 2 : 0
@@ -412,6 +425,12 @@ class StatesVisRaw extends React.Component {
       })
 
     this.link
+      .transition().duration(500).ease(d3.easePoly.exponent(2))
+      .attr('x1', (d) => this._getShiftLinkAtSource(d).x )
+      .attr('x2', (d) => d.target.x )
+      .attr('y1', (d) => this._getShiftLinkAtSource(d).y )
+      .attr('y2', (d) => d.target.y )
+
       .attr('opacity', (l) => {
         if (selection.nodes.size === 0) return 0.2/(l.midPoints.length + 1)
 
@@ -427,11 +446,13 @@ class StatesVisRaw extends React.Component {
 
         if (selection.nodes.size === 0) return 2*Math.sqrt(l.weight)
 
-        return _.reduce(
-          l.midPoints.map(d => d.id).concat([l.source.id, l.target.id]),
-          (res, pid) => { return selection.pathNodes.has(pid) && res },
-          true
-        ) ? 2*Math.sqrt(l.weight) : 0
+        var intersectedUids = _.reduce(
+          l.midPoints.map(d => d.user_ids).concat([l.source.user_ids, l.target.user_ids]),
+          (res, uids) => { return _.intersection(res, uids) },
+          _.keys(selection.users).map(i=>parseInt(i))
+        )
+
+        return 2*Math.sqrt(intersectedUids.length ? intersectedUids.length + 2 : 0)
       })
   }
 
