@@ -188,9 +188,9 @@ class StatesVisRaw extends React.Component {
         .classed('d3-link', true)
 
     link
-      .attr('stroke-width', l => 3 + Math.sqrt(l.weight))
+      .attr('stroke-width', l => 2*Math.sqrt(l.weight))
       .attr('stroke', l => l.midPoints.length === 0 ? (l.source < l.target ? '#94a3b6' : '#a3b694') : '#c7c00d' )
-      .attr('opacity', 0.1)
+      .attr('opacity', l => 0.2/(l.midPoints.length + 1))
 
 
     var point = g.selectAll('.d3-point')
@@ -202,7 +202,7 @@ class StatesVisRaw extends React.Component {
     point
         // .attr('cx', (d) => scales.x(d.distance_start) )
         // .attr('cy', (d) => scales.y(parseInt(d.id)) )
-        .attr('r', (d) => 1 + Math.sqrt(d.visits))
+        .attr('r', (d) => 2*Math.sqrt(d.visits))
         .attr('opacity', 0.25)
         .attr('fill', (d) => {
           return ({
@@ -224,9 +224,10 @@ class StatesVisRaw extends React.Component {
     var simulation = d3.forceSimulation(nodes)
             .force('charge', d3.forceManyBody())
             .force('link', d3.forceLink(links).id((d) => d.id).distance(width*height*1.0/links.length/5).strength(1))
-            .force('collision', d3.forceCollide().radius((d) => {
-              return (['start', 'end', 'end-quit'].indexOf(d.state_type) > -1) ? 40 : 5
-            }).strength(1))
+            .force('collide', d3.forceCollide(d => 2*Math.sqrt(d.visits)).iterations(2))
+            // .force('collision', d3.forceCollide().radius((d) => {
+            //   return (['start', 'end', 'end-quit'].indexOf(d.state_type) > -1) ? 40 : 5
+            // }).strength(1))
             .on('tick', () => {
               point
                 .each((d) => {
@@ -255,32 +256,32 @@ class StatesVisRaw extends React.Component {
                   }
                 })
 
-              link.each(l => {
-                var scale = 50.0/Math.sqrt(Math.pow(l.source.x - l.target.x, 2) + Math.pow(l.source.y - l.target.y, 2) + 1)
-
-                // if (l.source.x && l.source.y && l.target.x && l.target.y && !scale)
-                //   console.log(l.source.x, l.source.y, l.target.x, l.target.y, scale)
-
-                if (l.target.state_type === 'end-quit')
-                  scale = scale*3
-
-                if (l.source.state_type !== 'mid') {
-                  l.target.x = l.source.x + scale*(l.target.x - l.source.x)
-                  l.target.y = l.source.y + scale*(l.target.y - l.source.y)
-                }
-
-                if(l.target.state_type !== 'mid') {
-                  l.source.x = l.target.x + scale*(l.source.x - l.target.x)
-                  l.source.y = l.target.y + scale*(l.source.y - l.target.y)
-                }
-
-                // console.log(l)
-              })
+              // link.each(l => {
+              //   var scale = 50.0/Math.sqrt(Math.pow(l.source.x - l.target.x, 2) + Math.pow(l.source.y - l.target.y, 2) + 1)
+              //
+              //   // if (l.source.x && l.source.y && l.target.x && l.target.y && !scale)
+              //   //   console.log(l.source.x, l.source.y, l.target.x, l.target.y, scale)
+              //
+              //   if (l.target.state_type === 'end-quit')
+              //     scale = scale*3
+              //
+              //   if (l.source.state_type !== 'mid') {
+              //     l.target.x = l.source.x + scale*(l.target.x - l.source.x)
+              //     l.target.y = l.source.y + scale*(l.target.y - l.source.y)
+              //   }
+              //
+              //   if(l.target.state_type !== 'mid') {
+              //     l.source.x = l.target.x + scale*(l.source.x - l.target.x)
+              //     l.source.y = l.target.y + scale*(l.source.y - l.target.y)
+              //   }
+              //
+              //   // console.log(l)
+              // })
 
               var getShiftLinkAtSource = l => {
                 var { x, y } = l.source
-                var sourceRadius = 3 + Math.sqrt(l.source.visits)
-                var edgeWidth = 3 + Math.sqrt(l.weight)
+                var sourceRadius = 2*Math.sqrt(l.source.visits)
+                var edgeWidth = 2*Math.sqrt(l.weight)
 
                 var dx = l.target.x - x
                 var dy = l.target.y - y
@@ -391,9 +392,9 @@ class StatesVisRaw extends React.Component {
 
     this.point
       .attr('r', (d) => {
-        if (selection.nodes.size === 0) return 1 + Math.sqrt(d.visits)
+        if (selection.nodes.size === 0) return 2*Math.sqrt(d.visits)
 
-        return selection.pathNodes.has(d.id) ? 1 + Math.sqrt(d.visits) : 0
+        return selection.pathNodes.has(d.id) ? 2*Math.sqrt(d.visits) : 0
       })
       .attr('stroke-width', (d) => {
         return (selection.nodes.has(d.id) || selection.pathNodes.has(d.id)) ? 2 : 0
@@ -412,23 +413,25 @@ class StatesVisRaw extends React.Component {
 
     this.link
       .attr('opacity', (l) => {
-        if (selection.nodes.size === 0) return 0.1
+        if (selection.nodes.size === 0) return 0.2/(l.midPoints.length + 1)
 
-        return (selection.pathNodes.has(l.source.id) && selection.pathNodes.has(l.target.id))
-          ? 0.5 : 0.025
+        return (
+          (selection.pathNodes.has(l.source.id) && selection.pathNodes.has(l.target.id))
+            ? 0.5 : 0.025
+          )/(l.midPoints.length + 1)
       })
       .attr('stroke-width', (l) => {
         if (
           selection.users.length > 0 && _.chain(selection.users).intersection(l.target.user_ids).intersection(l.source.user_ids).uniq().value().length === 0
         ) return 0
 
-        if (selection.nodes.size === 0) return 3 + Math.sqrt(l.weight)
+        if (selection.nodes.size === 0) return 2*Math.sqrt(l.weight)
 
         return _.reduce(
           l.midPoints.map(d => d.id).concat([l.source.id, l.target.id]),
           (res, pid) => { return selection.pathNodes.has(pid) && res },
           true
-        ) ? 3 + Math.sqrt(l.weight) : 0
+        ) ? 2*Math.sqrt(l.weight) : 0
       })
   }
 

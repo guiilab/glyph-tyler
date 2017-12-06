@@ -48,9 +48,11 @@ class TrajectoriesVisRaw extends React.Component {
         .classed('d3-point', true)
 
     point
-        .attr('r', (d) => 1 + d.user_ids.length)
-        .attr('opacity', 0.25)
-        .attr('fill', 'black')
+        .attr('r', (d) => 3*Math.sqrt(d.user_ids.length))
+        .attr('opacity', 0.5)
+        .attr('stroke-width', 1)
+        .attr('stroke', 'black')
+        .attr('fill', 'blue')
 
     var x = (x) => x < 3*margin ? 3*margin : Math.min(width - 3*margin, x)
     var y = (y) => y < 2*margin ? 2*margin : Math.min(height - 2*margin, y)
@@ -66,7 +68,7 @@ class TrajectoriesVisRaw extends React.Component {
               .distance(l => d(l.similarity))
               .strength(1)
             )
-            .force('collide', d3.forceCollide(d => 1 + d.user_ids.length).iterations(2))
+            .force('collide', d3.forceCollide(d => 3*Math.sqrt(d.user_ids.length)).iterations(2))
             .on('tick', () => {
               point
                .attr('cx', d => d.x)
@@ -91,16 +93,10 @@ class TrajectoriesVisRaw extends React.Component {
     // )
 
     point
-      .on('mouseover', (node) => { })
-      .on('mouseout', (node) => { })
-      .on('click', (node) => { })
-      .on('dblclick', (node) => { })
-
-    link
-      .on('mouseover', (l) => { })
-      .on('mouseout', (l) => { })
-      .on('click', (l) => { })
-      .on('dblclick', (l) => { })
+      .on('mouseover', (t) => { this._onTrajectorySelection(t, true, false) })
+      .on('mouseout', (t) => { this._onTrajectorySelection(t, false, false) })
+      .on('click', (t) => { this._onTrajectorySelection(t, true, true) })
+      .on('dblclick', (t) => { this._onTrajectorySelection(t, false, false) })
 
     this.point = point
     this.link = link
@@ -111,10 +107,10 @@ class TrajectoriesVisRaw extends React.Component {
       this._redrawHighlights(nextProps)
   }
 
-  _onNodesSelection(nodes, isOn, isClicked) {
+  _onTrajectorySelection(trajectory, isOn, isClicked) {
     this.props.dispatch({
-      type: Redux.SELECT_NODES,
-      data: { nodes, isOn, isClicked }
+      type: Redux.SELECT_TRAJECTORY,
+      data: { trajectory, isOn, isClicked }
     })
 
     setTimeout(this._redrawHighlights.bind(this), 200)
@@ -130,7 +126,7 @@ class TrajectoriesVisRaw extends React.Component {
 
     this.point
       .attr('opacity', (d) => {
-        return _.intersection(d.user_ids.map(id => id + ''), _.keys(selection.users)).length === 0 && selection.nodes.size > 0 ? 0.05 : 0.25
+        return _.intersection(d.user_ids.map(id => id + ''), _.keys(selection.users)).length === 0 && selection.nodes.size > 0 ? 0.05 : 0.5
       })
   }
 

@@ -25,6 +25,10 @@ export var defaultState = {
   index: {}
 }
 
+function selectTrajectory(state, actionData) {
+  
+}
+
 function selectNodes(state, actionData) {
   var { nodes, isOn, isClicked } = actionData
   var res = {}
@@ -99,6 +103,8 @@ function view(state, action) {
         return _.assign({}, state, { dataset: action.data })
       case A.SELECT_NODES:
         return _.assign({}, state, selectNodes(state, action.data))
+      case A.SELECT_TRAJECTORY:
+        return _.assign({}, state, selectTrajectory(state, action.data))
       case A.META_VIEWER_KEY_PRESS:
         var index = state.metaViewer.currentIndex + action.data
         var max = _.keys(state.metaViewer.clicked).length
