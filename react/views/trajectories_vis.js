@@ -129,8 +129,10 @@ class TrajectoriesVisRaw extends React.Component {
 
     this.point
       .transition().duration(1000).ease(d3.easePoly.exponent(2))
-      .attr('opacity', (d) => {
-        return _.intersection(d.user_ids.map(id => id + ''), _.keys(selection.users)).length === 0 && selection.nodes.size > 0 ? 0.05 : 0.5
+      .attr('r', (d) => {
+        return _.intersection(d.user_ids.map(id => id + ''), _.keys(selection.users)).length === 0 && selection.nodes.size > 0 ?
+          0 :
+          3*Math.sqrt(d.user_ids.length)
       })
       .attr('fill', (d) => {
         return (selection.trajectories[d.trajectory] || selection.trajectoriesClicked[d.trajectory]) ? 'yellow' : 'blue'
