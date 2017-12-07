@@ -58,17 +58,21 @@ class TrajectoriesVisRaw extends React.Component {
     var y = (y) => y < 2*margin ? 2*margin : Math.min(height - 2*margin, y)
 
     var maxSimilarity = _.max(links.map(l => l.similarity))
-    var d = d3.scaleLinear().domain([0, maxSimilarity]).range([height/3, 1])
+    var d = d3.scalePow(3).domain([0, maxSimilarity]).range([height/3, 1])
 
     var simulation = d3.forceSimulation(nodes)
-            .force('charge', d3.forceManyBody())
+            .force('charge', d3.forceManyBody().strength(-30))
             .force('center', d3.forceCenter(width / 2, height / 2))
             .force('link',
               d3.forceLink(links).id(l => l.index)
               .distance(l => d(l.similarity))
               .strength(1)
+              .iterations(10)
             )
-            .force('collide', d3.forceCollide(d => 3*Math.sqrt(d.user_ids.length)).iterations(2))
+            .force('collide', d3.forceCollide(d => {
+              var r = 3*Math.sqrt(d.user_ids.length)
+              return (r > 9) ? r : 1
+            }).iterations(10))
             .on('tick', () => {
               point
                .attr('cx', d => d.x)
@@ -96,7 +100,7 @@ class TrajectoriesVisRaw extends React.Component {
       .on('mouseover', (t) => { this._onTrajectorySelection(t, true, false) })
       .on('mouseout', (t) => { this._onTrajectorySelection(t, false, false) })
       .on('click', (t) => { this._onTrajectorySelection(t, true, true) })
-      .on('dblclick', (t) => { this._onTrajectorySelection(t, false, false) })
+      .on('dblclick', (t) => { this._onTrajectorySelection(t, false, true) })
 
     this.point = point
     this.link = link
@@ -104,8 +108,7 @@ class TrajectoriesVisRaw extends React.Component {
 
   componentWillReceiveProps(nextProps) {
     if (this.props.store.view.updateTime !== nextProps.store.view.updateTime) {
-      console.log('update for trajectories')
-      this._redrawHighlights(nextProps)
+      setTimeout(() => this._redrawHighlights(nextProps), 200)
     }
   }
 
@@ -128,6 +131,9 @@ class TrajectoriesVisRaw extends React.Component {
       .transition().duration(1000).ease(d3.easePoly.exponent(2))
       .attr('opacity', (d) => {
         return _.intersection(d.user_ids.map(id => id + ''), _.keys(selection.users)).length === 0 && selection.nodes.size > 0 ? 0.05 : 0.5
+      })
+      .attr('fill', (d) => {
+        return (selection.trajectories[d.trajectory] || selection.trajectoriesClicked[d.trajectory]) ? 'yellow' : 'blue'
       })
   }
 

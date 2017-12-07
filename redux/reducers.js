@@ -14,7 +14,8 @@ export var defaultState = {
     updateTime: moment.utc().valueOf(),
     dataset: { }, // name, data
     selection: {
-      nodes: new Set(), pathNodes: new Set(), nodesClicked: new Set(), users: []
+      nodes: new Set(), pathNodes: new Set(), nodesClicked: new Set(), users: [],
+      trajectories: {}, trajectoriesClicked: {}
     },
     metaViewer: {
       mouseover: null,
@@ -31,7 +32,14 @@ function selectTrajectory(state, actionData) {
 
   actionData.nodes = nodes
 
-  return selectNodes(state, actionData)
+  var res = selectNodes(state, actionData)
+
+  if (actionData.isClicked)
+    res.selection.trajectoriesClicked[actionData.trajectory.trajectory] = actionData.isOn
+  else
+    res.selection.trajectories[actionData.trajectory.trajectory] = actionData.isOn
+
+  return res
 }
 
 function selectNodes(state, actionData) {
@@ -56,8 +64,6 @@ function selectNodes(state, actionData) {
       })
     })
 
-    console.log(_.chain(users).toPairs().filter(p => p[1].size === nodes.length).fromPairs().value())
-
     return _.chain(users).toPairs().filter(p => p[1].size === nodes.length).fromPairs().value()
   }
 
@@ -79,19 +85,14 @@ function selectNodes(state, actionData) {
       else delete metaClicked[n.id]
     })
 
-  console.log(
-    nodes,
-    findIntersectedUsers(state, allSelectedNodes),
-    actionData.trajectory,
-    new Set(findPath(state, allSelectedNodes).map(n => n.id))
-  )
-
   return {
     selection: {
       nodesClicked: isClicked ? interactedNodes : state.selection.nodesClicked,
       nodes: new Set(allSelectedNodes.map(n => n.id)),
       pathNodes: new Set(findPath(state, allSelectedNodes).map(n => n.id)),
-      users: findIntersectedUsers(state, allSelectedNodes)
+      users: findIntersectedUsers(state, allSelectedNodes),
+      trajectories: state.selection.trajectories,
+      trajectoriesClicked: state.selection.trajectoriesClicked
     },
 
     metaViewer: _.assign({}, state.metaViewer, {
