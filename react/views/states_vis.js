@@ -17,6 +17,13 @@ let mapDispatchToProps = (dispatch) => {
 }
 
 class StatesVisRaw extends React.Component {
+  componentWillReceiveProps(nextProps) {
+    if (this.props.store.view.updateTime !== nextProps.store.view.updateTime) {
+      console.log('update for states')
+      setTimeout(() => this._redrawHighlights(nextProps), 200)
+    }
+  }
+
   componentDidMount() {
     var width = this.divElement.clientWidth
     var height = this.props.store.app.visHeight/2
@@ -395,8 +402,6 @@ class StatesVisRaw extends React.Component {
       type: Redux.SELECT_NODES,
       data: { nodes, isOn, isClicked }
     })
-
-    setTimeout(this._redrawHighlights.bind(this), 200)
   }
 
   _redrawHighlights() {

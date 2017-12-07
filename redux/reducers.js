@@ -26,7 +26,12 @@ export var defaultState = {
 }
 
 function selectTrajectory(state, actionData) {
-  
+  var nids = new Set(actionData.trajectory.trajectory.split(','))
+  var nodes = state.dataset.nodes.filter(n => nids.has(n.id))
+
+  actionData.nodes = nodes
+
+  return selectNodes(state, actionData)
 }
 
 function selectNodes(state, actionData) {
@@ -46,10 +51,12 @@ function selectNodes(state, actionData) {
     var users = {}
 
     nodes.forEach((node) => {
-      node.user_ids.forEach((id) => {
+      _.uniq(node.user_ids).forEach((id) => {
         if(!users[id]) users[id] = new Set(); users[id].add(node.id)
       })
     })
+
+    console.log(_.chain(users).toPairs().filter(p => p[1].size === nodes.length).fromPairs().value())
 
     return _.chain(users).toPairs().filter(p => p[1].size === nodes.length).fromPairs().value()
   }
@@ -71,6 +78,13 @@ function selectNodes(state, actionData) {
       if (isOn) metaClicked[n.id] = true
       else delete metaClicked[n.id]
     })
+
+  console.log(
+    nodes,
+    findIntersectedUsers(state, allSelectedNodes),
+    actionData.trajectory,
+    new Set(findPath(state, allSelectedNodes).map(n => n.id))
+  )
 
   return {
     selection: {

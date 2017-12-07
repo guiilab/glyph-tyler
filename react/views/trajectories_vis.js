@@ -103,8 +103,10 @@ class TrajectoriesVisRaw extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (this.props.store.view.updateTime !== nextProps.store.view.updateTime)
+    if (this.props.store.view.updateTime !== nextProps.store.view.updateTime) {
+      console.log('update for trajectories')
       this._redrawHighlights(nextProps)
+    }
   }
 
   _onTrajectorySelection(trajectory, isOn, isClicked) {
@@ -112,8 +114,6 @@ class TrajectoriesVisRaw extends React.Component {
       type: Redux.SELECT_TRAJECTORY,
       data: { trajectory, isOn, isClicked }
     })
-
-    setTimeout(this._redrawHighlights.bind(this), 200)
   }
 
   _redrawHighlights(props) {
@@ -125,6 +125,7 @@ class TrajectoriesVisRaw extends React.Component {
     var selection = props.store.view.selection
 
     this.point
+      .transition().duration(1000).ease(d3.easePoly.exponent(2))
       .attr('opacity', (d) => {
         return _.intersection(d.user_ids.map(id => id + ''), _.keys(selection.users)).length === 0 && selection.nodes.size > 0 ? 0.05 : 0.5
       })
